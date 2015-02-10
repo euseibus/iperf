@@ -1,6 +1,17 @@
 iperf3:  A TCP, UDP, and SCTP network bandwidth measurement tool
 ================================================================
 
+
+Changes from esnet/iperf
+------------------------
+
+-Added cmd line parameter to specify network device/interface
+ This should help isolate traffic to certain devices on a multi-port system
+    --device eth1
+  
+
+
+
 Summary
 -------
 
