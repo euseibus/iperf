@@ -49,6 +49,7 @@ struct iperf_stream;
 #define OPT_UDP_COUNTERS_64BIT 4
 #define OPT_CLIENT_PORT 5
 #define OPT_NUMSTREAMS 6
+#define OPT_DEVICE_FILE 7
 
 /* states */
 #define TEST_START 1

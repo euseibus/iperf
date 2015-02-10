@@ -200,6 +200,7 @@ struct iperf_test
     int       sender_has_retransmits;
     struct protocol *protocol;
     signed char state;
+    char     *device_file;
     char     *server_hostname;                  /* -c option */
     char     *bind_address;                     /* first -B option */
     TAILQ_HEAD(xbind_addrhead, xbind_entry) xbind_addrs; /* all -X opts */

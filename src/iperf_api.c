@@ -594,6 +594,7 @@ iperf_parse_arguments(struct iperf_test *test, int argc, char **argv)
 {
     static struct option longopts[] =
     {
+        {"device", required_argument, NULL, OPT_DEVICE_FILE},
         {"port", required_argument, NULL, 'p'},
         {"format", required_argument, NULL, 'f'},
         {"interval", required_argument, NULL, 'i'},
@@ -790,6 +791,9 @@ iperf_parse_arguments(struct iperf_test *test, int argc, char **argv)
                 break;
             case 'B':
                 test->bind_address = strdup(optarg);
+                break;
+            case OPT_DEVICE_FILE:
+                test->device_file = optarg;
                 break;
             case OPT_CLIENT_PORT:
                 test->bind_port = atoi(optarg);

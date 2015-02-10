@@ -29,6 +29,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/errno.h>
@@ -38,6 +40,7 @@
 #include <netdb.h>
 #include <string.h>
 #include <sys/fcntl.h>
+
 
 #ifdef HAVE_SENDFILE
 #ifdef linux
@@ -66,11 +69,12 @@
 
 /* make connection to server */
 int
-netdial(int domain, int proto, char *local, int local_port, char *server, int port)
+netdial(int domain, int proto, char *local, int local_port, char *server, int port,char *device_file)
 {
     struct addrinfo hints, *local_res, *server_res;
+    struct ifreq ifr;
     int s;
-
+    
     if (local) {
         memset(&hints, 0, sizeof(hints));
         hints.ai_family = domain;
@@ -93,6 +97,18 @@ netdial(int domain, int proto, char *local, int local_port, char *server, int po
         return -1;
     }
 
+    if (device_file) {
+        printf("Attempting to bind client to device %s\n",device_file);
+        memset(&ifr, 0, sizeof(ifr));
+        snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), device_file);
+        if ((setsockopt(s, SOL_SOCKET, SO_BINDTODEVICE, (void *)&ifr, sizeof(ifr))) < 0) {
+            perror("Client-setsockopt() error for SO_BINDTODEVICE");
+            printf("%s -- cannot bind to %s\n", strerror(errno),device_file);
+            close(s);
+            return -1;
+        }   
+    }
+    
     if (local) {
         if (local_port) {
             struct sockaddr_in *lcladdr;
@@ -124,9 +140,10 @@ netdial(int domain, int proto, char *local, int local_port, char *server, int po
 /***************************************************************/
 
 int
-netannounce(int domain, int proto, char *local, int port)
+netannounce(int domain, int proto, char *local, int port,char* device_file)
 {
     struct addrinfo hints, *res;
+    struct ifreq ifr;
     char portstr[6];
     int s, opt;
 
@@ -168,6 +185,19 @@ netannounce(int domain, int proto, char *local, int port)
 	freeaddrinfo(res);
 	return -1;
     }
+    
+    if (device_file) {
+        printf("Attempting to bind server to device %s\n",device_file);
+        memset(&ifr, 0, sizeof(ifr));
+        snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), device_file);
+        if ((setsockopt(s, SOL_SOCKET, SO_BINDTODEVICE, (void *)&ifr, sizeof(ifr))) < 0) {
+            perror("Server-setsockopt() error for SO_BINDTODEVICE");
+            printf("%s -- cannot bind to %s\n", strerror(errno),device_file);
+            close(s);
+            return -1;
+        }   
+    }
+   
     /*
      * If we got an IPv6 socket, figure out if it should accept IPv4
      * connections as well.  We do that if and only if no address
